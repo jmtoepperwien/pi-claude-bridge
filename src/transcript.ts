@@ -30,6 +30,15 @@ const SECTION_RANK = new Map<string, number>([
 	["project_context", 5], ["skills", 6], ["cwd", 7],
 ]);
 
+/** Under a custom prompt (`customPrompt`, e.g. a sub-agent's systemPromptOverride) the
+ *  builder emits no tools/rules/docs, so a section by those names is an extension's custom
+ *  section (pi-permission-system adds `tools` and `rules` to sub-agents) and ranks last.
+ *  The default prompt always has `docs` — an empty custom value is skipped, a non-empty one
+ *  replaces it in place — so its absence marks a custom prompt. */
+const CUSTOM_PROMPT_SECTION_RANK = new Map<string, number>([
+	["preamble", 0], ["addendum", 1], ["project_context", 2], ["skills", 3], ["cwd", 4],
+]);
+
 /**
  * The map's entries, stably sorted by canonical rank. A name absent from the rank table is
  * a custom section, which pi's builder renders after every built-in, so it sorts last here
@@ -59,7 +68,8 @@ function canonicalSystemPrompt(message: SystemMessage | undefined): string | und
 	const sections = new Map<string, string>(
 		Object.entries(message.sections ?? {}).filter((entry): entry is [string, string] => entry[1] !== null),
 	);
-	const parts = [contentText(message.content), ...stableRanked(sections, SECTION_RANK).values()]
+	const ranks = sections.has("docs") ? SECTION_RANK : CUSTOM_PROMPT_SECTION_RANK;
+	const parts = [contentText(message.content), ...stableRanked(sections, ranks).values()]
 		.filter((part) => part.length > 0);
 	return parts.length > 0 ? parts.join("\n\n") : undefined;
 }

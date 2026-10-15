@@ -7,6 +7,7 @@
 - **Fix: a Claude Code output style no longer reaches bridge turns (#220)** — The provider runs Claude Code with its default output style, so a custom `outputStyle` in `~/.claude/settings.json` no longer competes with pi's system prompt.
 - **Fix: a tool that failed with no output no longer breaks the session (#227)** — A rebuilt session sent the empty error result as-is, which the API rejects on every later turn. Empty results now get the same placeholder text Claude Code uses live. This also applies when AskClaude sends pi's conversation to Claude Code. Thanks @ShyftXero.
 - **Add: `provider.systemPromptMode`** — `"replace"` sends only pi's prompt parts without Claude Code's `claude_code` preset; the default `"append"` is unchanged.
+- **Fix: sub-agents failed with `prompt-capture: no capture`** — under a custom prompt (e.g. pi-subagents-lite's override) pi emits no built-in `tools`/`rules`/`docs`, so same-named sections an extension adds (pi-permission-system) are custom and render after `cwd`. Replay ranking now treats them that way when `docs` is absent.
 - **Tests: remove redundant tests** — Drop integration and unit tests that repeated other tests or covered cc-session-io rather than the bridge.
 
 ## 0.10.0 — 2026-11-04
