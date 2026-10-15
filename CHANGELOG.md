@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 - **Add: `provider.systemPromptMode`** — `"replace"` sends only pi's portable prompt parts (context files, skills, custom/append text) without Claude Code's `claude_code` preset; `false` sends neither; `"append"` (default) is unchanged. Provider path only — AskClaude keeps the preset. Invalid values log an error and fall back to `"append"`.
+- **Fix: sub-agents failed with `prompt-capture: no capture`** — under a custom prompt (e.g. pi-subagents-lite's override) pi emits no built-in `tools`/`rules`/`docs`, so same-named sections an extension adds (pi-permission-system) are custom and render after `cwd`. Replay ranking now treats them that way when `docs` is absent.
 
 ## 0.9.3 — 2026-10-13
 

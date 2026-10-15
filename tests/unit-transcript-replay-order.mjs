@@ -94,10 +94,26 @@ describe("toBridgeContext section replay order", () => {
 	it("keeps a custom section appended after the built-ins", () => {
 		const messages = [
 			systemMessage({ content: "", toolsAdded: [{ name: "read", description: "", parameters: {} }] }),
-			systemMessage({ sections: { preamble: "P", tools: "T", cwd: "/w", myextension: "X" } }),
+			systemMessage({ sections: { preamble: "P", tools: "T", docs: "D", cwd: "/w", myextension: "X" } }),
 			userMessage("go"),
 		];
-		assert.equal(replayedSystemPrompt(messages), ["P", "T", "/w", "X"].join("\n\n"));
+		assert.equal(replayedSystemPrompt(messages), ["P", "T", "D", "/w", "X"].join("\n\n"));
+	});
+
+	it("ranks tools/rules as custom sections under a custom prompt (no docs)", () => {
+		// A sub-agent's systemPromptOverride: pi emits no built-in tools/rules/docs, and
+		// pi-permission-system adds custom `tools`/`rules`, which pi renders after cwd.
+		// The replay puts the late skills patch last; canonical order must still be
+		// preamble, project_context, skills, cwd, then customs in replay order.
+		const messages = [
+			systemMessage({ content: "", toolsAdded: [{ name: "read", description: "", parameters: {} }] }),
+			systemMessage({
+				sections: { preamble: "P", project_context: "C", cwd: "/w", tools: "T", rules: "R", ponytail: "X" },
+			}),
+			systemMessage({ sections: { skills: "S" } }),
+			userMessage("go"),
+		];
+		assert.equal(replayedSystemPrompt(messages), ["P", "C", "S", "/w", "T", "R", "X"].join("\n\n"));
 	});
 
 	it("renders the canonical head alone unchanged (fresh-session shape)", () => {
